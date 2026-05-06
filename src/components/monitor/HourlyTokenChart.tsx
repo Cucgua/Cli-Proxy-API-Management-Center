@@ -74,7 +74,7 @@ export function HourlyTokenChart({ timeRange, apiFilter, isDark }: HourlyTokenCh
         {
           type: 'line' as const,
           label: t('monitor.hourly_token.input'),
-          data: hourlyData.input_tokens.map((v) => v / 1000),
+          data: hourlyData.input_tokens.map((v, i) => Math.max(0, v - hourlyData.cached_tokens[i]) / 1000),
           borderColor: '#22c55e',
           backgroundColor: '#22c55e',
           borderWidth: 2,
@@ -96,6 +96,19 @@ export function HourlyTokenChart({ timeRange, apiFilter, isDark }: HourlyTokenCh
           order: 0,
           pointRadius: 3,
           pointBackgroundColor: '#f97316',
+        },
+        {
+          type: 'line' as const,
+          label: t('monitor.hourly_token.cached'),
+          data: hourlyData.cached_tokens.map((v) => v / 1000),
+          borderColor: '#a855f7',
+          backgroundColor: '#a855f7',
+          borderWidth: 2,
+          tension: 0.4,
+          yAxisID: 'y',
+          order: 0,
+          pointRadius: 3,
+          pointBackgroundColor: '#a855f7',
         },
         {
           type: 'bar' as const,

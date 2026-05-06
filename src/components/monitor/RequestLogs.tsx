@@ -17,6 +17,7 @@ import {
   formatCompactTokenNumber,
   type DateRange,
 } from '@/utils/monitor';
+import { useModelPricingStore } from '@/stores/useModelPricingStore';
 import styles from '@/pages/MonitorPage.module.scss';
 
 interface RequestLogsProps {
@@ -46,6 +47,7 @@ interface LogEntry {
   successRate: number;
   recentRequests: { failed: boolean; timestamp: number }[];
   authIndex: string;
+  cost: number | null;
 }
 
 const ROW_HEIGHT = 40;
@@ -59,6 +61,7 @@ export function RequestLogs({
   authIndexMap,
 }: RequestLogsProps) {
   const { t } = useTranslation();
+  const calculateCost = useModelPricingStore((s) => s.calculateCost);
   const [filterApi, setFilterApi] = useState('');
   const [filterModel, setFilterModel] = useState('');
   const [filterSource, setFilterSource] = useState('');
@@ -141,9 +144,10 @@ export function RequestLogs({
           timestamp: req.timestamp ? new Date(req.timestamp).getTime() : 0,
         })),
         authIndex: item.auth_index || '',
+        cost: calculateCost(item.model, item.input_tokens || 0, item.output_tokens || 0, item.cached_tokens || 0),
       };
     },
-    [providerMap, providerTypeMap]
+    [providerMap, providerTypeMap, calculateCost]
   );
 
   // 独立获取日志数据
@@ -254,6 +258,12 @@ export function RequestLogs({
     return logEntries.filter((entry) => entry.providerType === filterProviderType);
   }, [logEntries, filterProviderType]);
 
+  const pageCost = useMemo(() => {
+    return filteredEntries.reduce((sum, entry) => {
+      return sum + (entry.cost ?? 0);
+    }, 0);
+  }, [filteredEntries]);
+
   const rowVirtualizer = useVirtualizer({
     count: filteredEntries.length,
     getScrollElement: () => tableContainerRef.current,
@@ -334,6 +344,9 @@ export function RequestLogs({
         </td>
         <td className={styles.tokenCell} title={formatNumber(entry.cachedTokens)}>
           {formatCompactTokenNumber(entry.cachedTokens)}
+        </td>
+        <td className={styles.tokenCell} title={entry.cost !== null ? '$' + entry.cost.toFixed(6) : '--'}>
+          {entry.cost !== null ? '$' + entry.cost.toFixed(4) : '--'}
         </td>
         <td>{formatTimestamp(entry.timestamp)}</td>
         <td>
@@ -505,6 +518,7 @@ export function RequestLogs({
                       <th>{t('monitor.logs.header_input')}</th>
                       <th>{t('monitor.logs.header_output')}</th>
                       <th>{t('monitor.logs.header_cache')}</th>
+                      <th>{t('monitor.logs.header_cost')}</th>
                       <th>{t('monitor.logs.header_time')}</th>
                       <th>{t('monitor.logs.header_actions')}</th>
                     </tr>
@@ -594,13 +608,19 @@ export function RequestLogs({
         {filteredEntries.length > 0 && (
           <div
             style={{
-              textAlign: 'center',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               fontSize: 12,
               color: 'var(--text-tertiary)',
               marginTop: 8,
+              padding: '0 4px',
             }}
           >
-            {t('monitor.logs.total_count', { count: total })}
+            <span>
+              {t('monitor.logs.page_cost')}: <strong style={{ color: 'var(--text-primary)' }}>{pageCost > 0 ? '$' + pageCost.toFixed(4) : '--'}</strong>
+            </span>
+            <span>{t('monitor.logs.total_count', { count: total })}</span>
           </div>
         )}
       </Card>

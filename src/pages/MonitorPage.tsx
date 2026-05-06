@@ -29,6 +29,7 @@ import { ChannelStats } from '@/components/monitor/ChannelStats';
 import { FailureAnalysis } from '@/components/monitor/FailureAnalysis';
 import { RequestLogs } from '@/components/monitor/RequestLogs';
 import { ServiceHealthCard } from '@/components/monitor/ServiceHealthCard';
+import { ModelPricingModal } from '@/components/monitor/ModelPricingModal';
 import styles from './MonitorPage.module.scss';
 
 // 注册 Chart.js 组件
@@ -65,6 +66,7 @@ export function MonitorPage() {
   const [providerModels, setProviderModels] = useState<Record<string, Set<string>>>({});
   const [providerTypeMap, setProviderTypeMap] = useState<Record<string, string>>({});
   const [authIndexMap, setAuthIndexMap] = useState<Record<string, string>>({});
+  const [pricingModalOpen, setPricingModalOpen] = useState(false);
 
   // 加载渠道名称映射（支持所有提供商类型）
   const loadProviderMap = useCallback(async () => {
@@ -264,6 +266,13 @@ export function MonitorPage() {
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => setPricingModalOpen(true)}
+          >
+            {t('monitor.pricing.button')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={loadData}
             disabled={loading}
           >
@@ -349,6 +358,8 @@ export function MonitorPage() {
         apiFilter={apiFilter}
         authIndexMap={authIndexMap}
       />
+
+      <ModelPricingModal open={pricingModalOpen} onClose={() => setPricingModalOpen(false)} />
     </div>
   );
 }

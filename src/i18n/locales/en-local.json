@@ -26,7 +26,10 @@
       "avg_rpd": "Avg RPD",
       "tokens_per_minute": "Tokens per minute",
       "requests_per_minute": "Requests per minute",
-      "requests_per_day": "Requests per day"
+      "requests_per_day": "Requests per day",
+      "estimated_cost": "Estimated Cost",
+      "based_on_global_price": "Based on global default pricing",
+      "no_price_config": "No pricing configured"
     },
     "distribution": {
       "title": "Model Usage Distribution",
@@ -66,6 +69,22 @@
       "output": "Output",
       "reasoning": "Reasoning",
       "cached": "Cached"
+    },
+    "pricing": {
+      "button": "Model Pricing",
+      "title": "Model Pricing Management",
+      "global_default": "Global Default Pricing",
+      "model_prices": "Per-Model Pricing",
+      "add_model": "Add Model Pricing",
+      "model": "Model",
+      "input_price": "Input Price",
+      "output_price": "Output Price",
+      "cached_price": "Cached Price",
+      "model_placeholder": "Model name",
+      "input_placeholder": "Input $/M",
+      "output_placeholder": "Output $/M",
+      "cached_placeholder": "Cached $/M",
+      "no_prices": "No model pricing yet. Add one or set a global default."
     },
     "channel": {
       "title": "Channel Statistics",
@@ -142,6 +161,8 @@
       "header_total": "Total Tokens",
       "header_cache": "Cache",
       "header_time": "Time",
+      "header_cost": "Cost",
+      "page_cost": "Page Cost",
       "header_actions": "Actions",
       "showing": "Showing {{start}}-{{end}} of {{total}}",
       "page_info": "Page {{current}}/{{total}}",

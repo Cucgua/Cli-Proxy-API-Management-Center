@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { TimeRange } from '@/pages/MonitorPage';
 import { monitorApi, type MonitorKpiData } from '@/services/api/monitor';
 import { buildMonitorTimeRangeParams } from '@/utils/monitor';
+import { useModelPricingStore } from '@/stores/useModelPricingStore';
 import styles from '@/pages/MonitorPage.module.scss';
 
 interface KpiCardsProps {
@@ -25,10 +26,17 @@ function formatNumber(num: number): string {
   return num.toLocaleString();
 }
 
+function formatCost(cost: number): string {
+  if (cost >= 1000) return '$' + cost.toFixed(2);
+  if (cost >= 1) return '$' + cost.toFixed(3);
+  return '$' + cost.toFixed(6);
+}
+
 export function KpiCards({ timeRange, apiFilter }: KpiCardsProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [kpiData, setKpiData] = useState<MonitorKpiData | null>(null);
+  const globalDefault = useModelPricingStore((s) => s.globalDefault);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,8 +119,9 @@ export function KpiCards({ timeRange, apiFilter }: KpiCardsProps) {
           {loading ? '--' : formatNumber(stats.total_tokens)}
         </div>
         <div className={styles.kpiMeta}>
-          <span>{t('monitor.kpi.input')}: {loading ? '--' : formatNumber(stats.input_tokens)}</span>
+          <span>{t('monitor.kpi.input')}: {loading ? '--' : formatNumber(Math.max(0, stats.input_tokens - stats.cached_tokens))}</span>
           <span>{t('monitor.kpi.output')}: {loading ? '--' : formatNumber(stats.output_tokens)}</span>
+          <span>{t('monitor.kpi.cached')}: {loading ? '--' : formatNumber(stats.cached_tokens)}</span>
         </div>
       </div>
 
@@ -155,6 +164,29 @@ export function KpiCards({ timeRange, apiFilter }: KpiCardsProps) {
         </div>
         <div className={styles.kpiMeta}>
           <span>{t('monitor.kpi.requests_per_day')}</span>
+        </div>
+      </div>
+
+      {/* 预估费用 */}
+      <div className={`${styles.kpiCard} ${styles.yellow}`}>
+        <div className={styles.kpiTitle}>
+          <span className={styles.kpiLabel}>{t('monitor.kpi.estimated_cost')}</span>
+          <span className={styles.kpiTag}>{timeRangeLabel}</span>
+        </div>
+        <div className={styles.kpiValue}>
+          {(() => {
+            if (loading) return '--';
+            if (!globalDefault) return '--';
+            const actualInput = Math.max(0, stats.input_tokens - stats.cached_tokens);
+            const cost =
+              (actualInput / 1_000_000) * globalDefault.input +
+              (stats.output_tokens / 1_000_000) * globalDefault.output +
+              (stats.cached_tokens / 1_000_000) * globalDefault.cached;
+            return formatCost(cost);
+          })()}
+        </div>
+        <div className={styles.kpiMeta}>
+          <span>{globalDefault ? t('monitor.kpi.based_on_global_price') : t('monitor.kpi.no_price_config')}</span>
         </div>
       </div>
     </div>

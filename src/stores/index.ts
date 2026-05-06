@@ -11,4 +11,5 @@ export { useModelsStore } from './useModelsStore';
 export { useQuotaStore } from './useQuotaStore';
 export { useOpenAIEditDraftStore } from './useOpenAIEditDraftStore';
 export { useClaudeEditDraftStore } from './useClaudeEditDraftStore';
+export { useModelPricingStore } from './useModelPricingStore';
 export * from './local';
